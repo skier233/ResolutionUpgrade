@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ResolutionUpgrade</AssemblyName>
+    <RootNamespace>ResolutionUpgrade</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Maps HTTP endpoints, so it needs the ASP.NET Core shared framework (host-provided at runtime). -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <InternalsVisibleTo Include="ResolutionUpgrade.Tests" />
+  </ItemGroup>
+
+  <!-- Cove host contracts (Cove.Sdk + Cove.Core) are referenced centrally and compile-only by
+       ..\..\Directory.Build.targets. Metadata lives in extension.json (copied centrally by
+       ..\..\Directory.Build.props). -->
+</Project>

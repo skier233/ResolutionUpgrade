@@ -1,0 +1,14 @@
+{
+  "id": "cove.community.resolutionupgrade",
+  "name": "Resolution Upgrades",
+  "version": "0.1.0",
+  "description": "Find videos whose source site offers a higher resolution than the file in your library, download the better version into the same video, and replace the old file.",
+  "author": "skier233",
+  "url": "https://github.com/skier233/ResolutionUpgrade",
+  "categories": ["tools", "downloader", "content-management"],
+  "minCoveVersion": "1.7.0",
+  "entryDll": "ResolutionUpgrade.dll",
+  "jsBundle": "dist/bundle.js",
+  "cssBundle": "dist/bundle.css",
+  "dependencies": {}
+}

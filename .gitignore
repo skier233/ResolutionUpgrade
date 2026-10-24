@@ -1,0 +1,7 @@
+**/bin/*
+**/obj/*
+artifacts/
+*.zip
+.DS_Store
+node_modules/
+src/*/dist/

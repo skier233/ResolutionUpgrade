@@ -1,0 +1,79 @@
+name: Build and Release Extension
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    tags:
+      - 'v*'
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  NODE_VERSION: '24.x'
+  EXTENSION_PROJECT: src/ResolutionUpgrade/ResolutionUpgrade.csproj
+  TEST_PROJECT: tests/ResolutionUpgrade.Tests/ResolutionUpgrade.Tests.csproj
+  EXTENSION_ID: cove.community.resolutionupgrade
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Build UI bundle
+        run: |
+          npm ci
+          npm run build:ui
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "value=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=0.0.0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore
+        run: dotnet restore ${{ env.EXTENSION_PROJECT }} -p:UseLocalCoveSource=false -p:UseLocalCoveCore=false
+
+      - name: Build
+        run: dotnet build ${{ env.EXTENSION_PROJECT }} -c Release --no-restore -p:UseLocalCoveSource=false -p:UseLocalCoveCore=false
+
+      - name: Test
+        run: dotnet test ${{ env.TEST_PROJECT }} -c Release -p:UseLocalCoveSource=false -p:UseLocalCoveCore=false
+
+      - name: Publish
+        run: dotnet publish ${{ env.EXTENSION_PROJECT }} -c Release -o artifacts/extension --no-build -p:UseLocalCoveSource=false -p:UseLocalCoveCore=false
+
+      - name: Copy manifest
+        run: cp src/ResolutionUpgrade/extension.json artifacts/extension/
+
+      - name: Package
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          cd artifacts/extension
+          zip -r ../../${{ env.EXTENSION_ID }}-${{ steps.version.outputs.value }}.zip .
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: '${{ env.EXTENSION_ID }}-*.zip'
+          generate_release_notes: true
